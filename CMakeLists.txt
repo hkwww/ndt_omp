@@ -8,10 +8,10 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2")
 # pcl 1.7 causes a segfault when it is built with debug mode
 set(CMAKE_BUILD_TYPE "RELEASE")
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  pcl_ros
-)
+#=======================================
+# Compile setup (ORIGINAL, CATKIN)
+#=======================================
+set(COMPILE_METHOD ORIGINAL)
 
 find_package(PCL 1.7 REQUIRED)
 include_directories(${PCL_INCLUDE_DIRS})
@@ -31,18 +31,43 @@ endif()
 ###################################
 ## catkin specific configuration ##
 ###################################
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ndt_omp
-)
+
+if(${COMPILE_METHOD} STREQUAL "CATKIN")
+  find_package(roscpp 1.12 QUIET)
+  if(roscpp_FOUND)
+    message(=============================================================)
+    message("-- ROS Found, compile the project with catkin make!")
+    message(=============================================================)
+    find_package(catkin REQUIRED COMPONENTS
+      roscpp
+      pcl_ros
+    )
+
+    catkin_package(
+      INCLUDE_DIRS include
+      LIBRARIES ndt_omp
+    )
+    include_directories(${catkin_INCLUDE_DIRS})
+
+    add_definitions(-DROS_FOUND)
+  else(roscpp_FOUND)
+    message(=============================================================)
+    message("-- ROS Not Found, Ros Support is turned Off!")
+    message(=============================================================)
+  endif(roscpp_FOUND)
+
+elseif (${COMPILE_METHOD} STREQUAL "ORIGINAL")  
+  message(=============================================================)
+  message("-- Compile the project with cmake !")
+  message(=============================================================)
+
+
+endif()
 
 ###########
 ## Build ##
 ###########
 include_directories(include)
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
 
 add_library(ndt_omp
   src/pclomp/voxel_grid_covariance_omp.cpp
@@ -50,30 +75,43 @@ add_library(ndt_omp
   src/pclomp/gicp_omp.cpp
 )
 
-add_executable(align
-  apps/align.cpp
-)
-add_dependencies(align
-  ndt_omp
-)
-target_link_libraries(align
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ndt_omp
-)
+# add_executable(align
+#   apps/align.cpp
+# )
+# add_dependencies(align
+#   ndt_omp
+# )
+# target_link_libraries(align
+#   ${catkin_LIBRARIES}
+#   ${PCL_LIBRARIES}
+#   ndt_omp
+# )
 
 ############
 ## INSTAL ##
 ############
 
-install(
-  TARGETS
-    ndt_omp
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-)
+if(${COMPILE_METHOD} STREQUAL "CATKIN")
+  if(roscpp_FOUND)
+    install(
+      TARGETS
+        ndt_omp
+      ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+      RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+      LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    )
 
-# install headers
-install(DIRECTORY include/pclomp
-        DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
+    # install headers
+    install(DIRECTORY include/pclomp
+            DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
+    endif(roscpp_FOUND)
+elseif(${COMPILE_METHOD} STREQUAL "CATKIN")
+  install(
+    TARGETS
+      ndt_omp
+    ARCHIVE DESTINATION bin/lib
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION bin/lib
+  )
+
+endif(${COMPILE_METHOD} STREQUAL "CATKIN")
