@@ -40,7 +40,7 @@ private:
 };
 
 int main(int argc, char** argv) {
-  std::string dataset_folder_path = "/home/hkw/dataset/Yang1Lidar";
+  std::string dataset_folder_path = "/home/hkw/dataset/Yang2Lidar";
 
   int num_cores = 2;
   double target_resolution = 2.0;
@@ -94,6 +94,7 @@ int main(int argc, char** argv) {
     }
 
     if(vec.size() == 8) {
+      cloud_timestamp_cache.push_back(vec[0]);
       Eigen::Matrix4f pose = Eigen::Matrix4f::Identity();
       pose(0, 3) = vec[1];
       pose(1, 3) = vec[2];

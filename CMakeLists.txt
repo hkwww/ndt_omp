@@ -2,8 +2,15 @@ cmake_minimum_required(VERSION 2.8.3)
 project(ndt_omp)
 
 # -mavx causes a lot of errors!!
-add_definitions(-std=c++11 -msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2)
-set(CMAKE_CXX_FLAGS "-std=c++11 -msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2")
+message(STATUS "SYSTEM ARCH : " ${CMAKE_HOST_SYSTEM_PROCESSOR})
+if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "x86_64")
+ add_definitions(-std=c++14 -msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2)
+ set(CMAKE_CXX_FLAGS "-std=c++14 -msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2")
+else()
+  set(CMAKE_CXX_FLAGS "-std=c++14 -fopenmp")
+endif()
+
+
 
 # pcl 1.7 causes a segfault when it is built with debug mode
 set(CMAKE_BUILD_TYPE "RELEASE")
@@ -13,7 +20,7 @@ set(CMAKE_BUILD_TYPE "RELEASE")
 #=======================================
 set(COMPILE_METHOD ORIGINAL)
 
-find_package(PCL 1.7 REQUIRED)
+find_package(PCL REQUIRED)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
