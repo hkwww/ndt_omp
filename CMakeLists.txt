@@ -28,6 +28,9 @@ if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
+# set global value
+set_property(GLOBAL PROPERTY NDT_OMP_INCLUDE_DIR include/pclomp)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -75,17 +78,17 @@ add_library(ndt_omp
   src/pclomp/gicp_omp.cpp
 )
 
-# add_executable(align
-#   apps/align.cpp
-# )
-# add_dependencies(align
-#   ndt_omp
-# )
-# target_link_libraries(align
-#   ${catkin_LIBRARIES}
-#   ${PCL_LIBRARIES}
-#   ndt_omp
-# )
+add_executable(cloud_align_benchmark
+  apps/cloud_align_benchmark.cpp
+)
+add_dependencies(cloud_align_benchmark
+  ndt_omp
+)
+target_link_libraries(cloud_align_benchmark
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ndt_omp
+)
 
 ############
 ## INSTAL ##
